@@ -1,20 +1,32 @@
 import { Request, Response } from "express";
+import User from "../models/user";
 
 //GET API Controller
-export const getUsers = ( req: Request, res: Response ) => {
-    res.json({
-        msg: 'getUsers'
-    });
+export const getUsers = async( req: Request, res: Response ) => {
+    
+    //Find all users from the table
+    const users = await User.findAll();
+
+    res.json({ users });
 }
 
 //GET API Controller - getUser
-export const getUser = ( req: Request, res: Response ) => {
+export const getUser = async( req: Request, res: Response ) => {
     const { id } = req.params;
 
-    res.json({
-        msg: 'getUser',
-        id
-    });
+    //Searchs for the use with the id of the params
+    const user = await User.findByPk( id );
+
+    //If the user exists then return it, else return an error message
+    if( user ){
+        res.json( user );
+    }else{
+        res.status(404).json({
+            ok: false,
+            msg: `There is no user with the id ${id}`
+        });
+    }
+
 }
 
 //POST API Controller
