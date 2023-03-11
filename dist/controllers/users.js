@@ -93,12 +93,22 @@ const updateUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
 });
 exports.updateUser = updateUser;
 //DELETE API Controller
-const deleteUser = (req, res) => {
-    const { body } = req;
-    res.json({
-        msg: 'deleteUser',
-        body
-    });
-};
+const deleteUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { id } = req.params;
+    //Logic delete
+    //Search for the user with the id sent in the params
+    const user = yield user_1.default.findByPk(id);
+    //IF the user does not exist we return an error
+    if (!user) {
+        return res.status(404).json({
+            msg: `It does not exist an user with the id ${id}`
+        });
+    }
+    //Complete deletion
+    // await user.destroy();
+    //This just changes the field status from 1 to 0
+    yield user.update({ status: false });
+    res.json(user);
+});
 exports.deleteUser = deleteUser;
 //# sourceMappingURL=users.js.map

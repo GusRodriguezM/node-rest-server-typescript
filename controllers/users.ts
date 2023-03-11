@@ -96,11 +96,25 @@ export const updateUser = async( req: Request, res: Response ) => {
 }
 
 //DELETE API Controller
-export const deleteUser = ( req: Request, res: Response ) => {
-    const { body } = req;
+export const deleteUser = async( req: Request, res: Response ) => {
+    const { id } = req.params;
+
+    //Logic delete
+    //Search for the user with the id sent in the params
+    const user = await User.findByPk( id );
+            
+    //IF the user does not exist we return an error
+    if( !user ){
+        return res.status(404).json({
+            msg: `It does not exist an user with the id ${id}`
+        });
+    }
+
+    //Complete deletion
+    // await user.destroy();
+
+    //This just changes the field status from 1 to 0
+    await user.update({ status: false });
     
-    res.json({
-        msg: 'deleteUser',
-        body
-    });
+    res.json( user );
 }
