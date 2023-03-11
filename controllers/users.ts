@@ -30,25 +30,69 @@ export const getUser = async( req: Request, res: Response ) => {
 }
 
 //POST API Controller
-export const createUser = ( req: Request, res: Response ) => {
+export const createUser = async( req: Request, res: Response ) => {
     const { body } = req;
-    
-    res.json({
-        msg: 'postUser',
-        body
-    });
+
+    try {
+
+        //Makes a query to check if an user with the email from the params exist
+        const emailExists = await User.findOne({
+            where: { email: body.email }
+        });
+
+        //If exists we return an error
+        if( emailExists ){
+            return res.status(400).json({
+                msg: `An user already exists with the email ${body.email}`
+            });
+        }
+
+        //Else we create the user in the database
+        const user = await User.create( body );
+        res.json( user );
+        
+    } catch (error) {
+        console.log( error );
+        res.status(500).json({
+            msg: 'The user could not be created'
+        });
+    }
+
 }
 
 //PUT API Controller
-export const updateUser = ( req: Request, res: Response ) => {
+export const updateUser = async( req: Request, res: Response ) => {
     const { id } = req.params;
     const { body } = req;
     
-    res.json({
-        msg: 'putUser',
-        id,
-        body
-    });
+    try {
+
+        //Search for the user with the id sent in the params
+        const user = await User.findByPk( id );
+        
+        //IF the user does not exist we return an error
+        if( !user ){
+            return res.status(404).json({
+                msg: `It does not exist an user with the id ${id}`
+            });
+        }
+
+        //Else we make the update with the fields that corresponds to the id
+        await User.update( body, { where: { id: id } } );
+
+        //We search again for the updated user
+        const updatedUser = await User.findByPk( id );
+
+        //We return the updated user
+        res.json( updatedUser );
+        
+    } catch (error) {
+        console.log( error );
+        res.status(500).json({
+            msg: 'The operation could not be made. Please contact the admin!'
+        });
+    }
+
 }
 
 //DELETE API Controller

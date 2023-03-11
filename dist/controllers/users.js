@@ -39,24 +39,58 @@ const getUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 });
 exports.getUser = getUser;
 //POST API Controller
-const createUser = (req, res) => {
+const createUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { body } = req;
-    res.json({
-        msg: 'postUser',
-        body
-    });
-};
+    try {
+        //Makes a query to check if an user with the email from the params exist
+        const emailExists = yield user_1.default.findOne({
+            where: { email: body.email }
+        });
+        //If exists we return an error
+        if (emailExists) {
+            return res.status(400).json({
+                msg: `An user already exists with the email ${body.email}`
+            });
+        }
+        //Else we create the user in the database
+        const user = yield user_1.default.create(body);
+        res.json(user);
+    }
+    catch (error) {
+        console.log(error);
+        res.status(500).json({
+            msg: 'The user could not be created'
+        });
+    }
+});
 exports.createUser = createUser;
 //PUT API Controller
-const updateUser = (req, res) => {
+const updateUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.params;
     const { body } = req;
-    res.json({
-        msg: 'putUser',
-        id,
-        body
-    });
-};
+    try {
+        //Search for the user with the id sent in the params
+        const user = yield user_1.default.findByPk(id);
+        //IF the user does not exist we return an error
+        if (!user) {
+            return res.status(404).json({
+                msg: `It does not exist an user with the id ${id}`
+            });
+        }
+        //Else we make the update with the fields that corresponds to the id
+        yield user_1.default.update(body, { where: { id: id } });
+        //We search again for the updated user
+        const updatedUser = yield user_1.default.findByPk(id);
+        //We return the updated user
+        res.json(updatedUser);
+    }
+    catch (error) {
+        console.log(error);
+        res.status(500).json({
+            msg: 'The operation could not be made. Please contact the admin!'
+        });
+    }
+});
 exports.updateUser = updateUser;
 //DELETE API Controller
 const deleteUser = (req, res) => {
